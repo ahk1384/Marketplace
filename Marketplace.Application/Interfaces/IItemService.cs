@@ -1,6 +1,7 @@
-﻿using Marketplace.Domain;
+﻿using System;
+using Marketplace.Domain;
 
-namespace Service
+namespace Marketplace.Application
 {
     public interface IItemService
     {

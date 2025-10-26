@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Mraketplace.Presention.DTOs.RequestModels;
 using Mraketplace.Presention.DTOs.ResponseModels;
-using Service;
+using Marketplace.Application;
 
 
 [ApiController]

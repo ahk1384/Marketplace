@@ -1,9 +1,9 @@
-﻿using Service;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Marketplace.Domain;
 
 namespace Marketplace.Application
 {
@@ -22,7 +22,7 @@ namespace Marketplace.Application
 
         public bool RemoveItem(int itemId)
         {
-            var item = items.FirstOrDefault(i => i.id == itemId);
+            var item = items.FirstOrDefault(i => i.Id == itemId);
             if (item != null)
             {
                 items.Remove(item);
@@ -33,10 +33,10 @@ namespace Marketplace.Application
 
         public bool BuyItem(User user, int itemId)
         {
-            var item = items.FirstOrDefault(i => i.id == itemId);
-            if (item != null && user.Balance >= item.price)
+            var item = items.FirstOrDefault(i => i.Id == itemId);
+            if (item != null && user.Balance >= item.Price)
             {
-                user.Balance -= item.price;
+                user.Balance -= item.Price;
                 items.Remove(item);
                 return true;
             }

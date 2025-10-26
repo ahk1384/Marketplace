@@ -1,4 +1,4 @@
-using Npgsql;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
 namespace Marketplace.Infrastructure.Utilities
@@ -9,10 +9,10 @@ namespace Marketplace.Infrastructure.Utilities
         {
             try
             {
-                using var connection = new NpgsqlConnection(connectionString);
+                using var connection = new SqlConnection(connectionString);
                 connection.Open();
                 Console.WriteLine("? Database connection successful!");
-                Console.WriteLine($"Connected to: {connection.Database} on {connection.Host}:{connection.Port}");
+                Console.WriteLine($"Connected to: {connection.Database} on {connection.DataSource}");
                 return true;
             }
             catch (Exception ex)
@@ -27,12 +27,12 @@ namespace Marketplace.Infrastructure.Utilities
         {
             try
             {
-                var builder = new NpgsqlConnectionStringBuilder(connectionString);
+                var builder = new SqlConnectionStringBuilder(connectionString);
                 Console.WriteLine("Connection Details:");
-                Console.WriteLine($"Host: {builder.Host}");
-                Console.WriteLine($"Port: {builder.Port}");
-                Console.WriteLine($"Database: {builder.Database}");
-                Console.WriteLine($"Username: {builder.Username}");
+                Console.WriteLine($"Data Source: {builder.DataSource}");
+                Console.WriteLine($"Initial Catalog: {builder.InitialCatalog}");
+                Console.WriteLine($"Integrated Security: {builder.IntegratedSecurity}");
+                Console.WriteLine($"User ID: {(string.IsNullOrEmpty(builder.UserID) ? "Using Windows Authentication" : builder.UserID)}");
                 Console.WriteLine($"Password: {(string.IsNullOrEmpty(builder.Password) ? "Not set" : "***")}");
             }
             catch (Exception ex)
@@ -41,32 +41,39 @@ namespace Marketplace.Infrastructure.Utilities
             }
         }
 
-        public static bool TestMultiplePorts(string host, string username, string password, string database)
+        public static bool TestMultipleServers(string[] serverNames, string database, string? userId = null, string? password = null)
         {
-            int[] commonPorts = { 5432, 5433, 5434, 5435 };
+            Console.WriteLine("Testing SQL Server instances...");
             
-            Console.WriteLine("Testing common PostgreSQL ports...");
-            
-            foreach (int port in commonPorts)
+            foreach (string serverName in serverNames)
             {
-                var connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};";
-                Console.WriteLine($"Testing port {port}...");
+                string connectionString;
+                if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(password))
+                {
+                    connectionString = $"Data Source={serverName};Initial Catalog={database};User ID={userId};Password={password};Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;";
+                }
+                else
+                {
+                    connectionString = $"Data Source={serverName};Initial Catalog={database};Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;";
+                }
+                
+                Console.WriteLine($"Testing server {serverName}...");
                 
                 try
                 {
-                    using var connection = new NpgsqlConnection(connectionString);
+                    using var connection = new SqlConnection(connectionString);
                     connection.Open();
-                    Console.WriteLine($"? SUCCESS! PostgreSQL found on port {port}");
+                    Console.WriteLine($"? SUCCESS! SQL Server found: {serverName}");
                     Console.WriteLine($"Use this connection string: {connectionString}");
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"? Port {port}: {ex.Message}");
+                    Console.WriteLine($"? Server {serverName}: {ex.Message}");
                 }
             }
             
-            Console.WriteLine("No PostgreSQL found on common ports.");
+            Console.WriteLine("No SQL Server found on tested instances.");
             return false;
         }
     }

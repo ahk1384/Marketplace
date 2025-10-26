@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Marketplace.Domain;
+using Marketplace.Infrastructure;
 
-namespace Service
+namespace Marketplace.Application
 {
     public class UserService : IUserService
     {
