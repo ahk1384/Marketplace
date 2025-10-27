@@ -10,5 +10,6 @@ namespace Marketplace.Application
         public User? GetUserByName(string name);
         public User? Authenticate(string name, string password);
         public bool AddBalance(string name, int amount);
+        public string GetAllUser();
     }
 }

@@ -16,9 +16,9 @@ public class UsersController : ControllerBase
     }
     
     [HttpGet("get-user-summary")]
-    public UserSummaryResponseModel GetUserFunction()
+    public string GetUserFunction()
     {
-        return new UserSummaryResponseModel();
+        return _userService.GetAllUser();
     }
 
     [HttpPost("register")]

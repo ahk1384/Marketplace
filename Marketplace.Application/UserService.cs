@@ -79,5 +79,15 @@ namespace Marketplace.Application
             _context.SaveChanges();
             return true;
         }
+
+        public string GetAllUser()
+        {
+            string res = string.Empty;  
+            foreach(var w in _context.Users)
+            {
+                res += ("Name : " + w.Username + " | Age : " + w.Age + " | Balance : " + w.Balance + "\n");
+            }
+            return res;
+        }
     }
 }
