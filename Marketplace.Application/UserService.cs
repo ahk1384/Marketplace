@@ -1,38 +1,34 @@
-﻿using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Marketplace.Application.Interfaces;
 using Marketplace.Domain;
-using Marketplace.Infrastructure;
 
 namespace Marketplace.Application
 {
     public class UserService : IUserService
     {
-        private readonly DatabaseManager _context;
+        private readonly IUserRepository _userRepository;
 
-        public UserService(DatabaseManager context)
+        public UserService(IUserRepository userRepository)
         {
-            _context = context;
+            _userRepository = userRepository;
         }
 
-        public bool EditUser(string name, int age, string phoneNumber, string email)
+        public async Task<bool> EditUserAsync(string name, int age, string phoneNumber, string email)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == name);
+            var user = await _userRepository.GetByUsernameAsync(name);
             if (user != null)
             {
-                user.Age = age;
-                user.PhoneNumber = phoneNumber;
-                user.Email = email;
-                _context.SaveChanges();
+                user.UpdateProfile(age, phoneNumber, email);
+                await _userRepository.UpdateAsync(user);
+                await _userRepository.SaveChangesAsync();
                 return true;
             }
             return false;
         }
 
-        public bool LoginUser(string name, string password)
+        public async Task<bool> LoginUserAsync(string name, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == name && u.Password == password);
-            if (user != null)
+            var user = await _userRepository.GetByUsernameAsync(name);
+            if (user != null && user.Password == password)
             {
                 Console.WriteLine("Login successful");
                 return true;
@@ -40,29 +36,28 @@ namespace Marketplace.Application
             return false;
         }
 
-        public bool RegisterUser(string name, string password, int age, string phoneNumber, string email)
+        public async Task<bool> RegisterUserAsync(string name, string password, int age, string phoneNumber, string email)
         {
-            // Check if user already exists
-            if (_context.Users.Any(u => u.Username == name))
+            if (await _userRepository.ExistsAsync(name))
             {
-                return false; // User already exists
+                return false;
             }
 
             var user = new User(name, password, age, phoneNumber, email);
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            await _userRepository.AddAsync(user);
+            await _userRepository.SaveChangesAsync();
             return true;
         }
 
-        public User? GetUserByName(string name)
+        public async Task<User?> GetUserByNameAsync(string name)
         {
-            return _context.Users.FirstOrDefault(u => u.Username == name);
+            return await _userRepository.GetByUsernameAsync(name);
         }
 
-        public User? Authenticate(string name, string password)
+        public async Task<User?> AuthenticateAsync(string name, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == name && u.Password == password);
-            if (user != null)
+            var user = await _userRepository.GetByUsernameAsync(name);
+            if (user != null && user.Password == password)
             {
                 Console.WriteLine("Login successful");
                 return user;
@@ -70,24 +65,28 @@ namespace Marketplace.Application
             return null;
         }
 
-        public bool AddBalance(string name, int amount)
+        public async Task<bool> AddBalanceAsync(string name, int amount)
         {
-            var user = GetUserByName(name);
+            var user = await GetUserByNameAsync(name);
             if (user == null) return false;
             
-            user.Balance += amount;
-            _context.SaveChanges();
+            user.AddBalance(amount);
+            await _userRepository.UpdateAsync(user);
+            await _userRepository.SaveChangesAsync();
             return true;
         }
 
-        public string GetAllUser()
+        public async Task<string> GetAllUsersAsync()
         {
-            string res = string.Empty;  
-            foreach(var w in _context.Users)
+            var users = await _userRepository.GetAllAsync();
+            var result = string.Empty;
+            
+            foreach (var user in users)
             {
-                res += ("Name : " + w.Username + " | Age : " + w.Age + " | Balance : " + w.Balance + "\n");
+                result += $"Name: {user.Username} | Age: {user.Age} | Balance: {user.Balance}\n";
             }
-            return res;
+            
+            return result;
         }
     }
 }

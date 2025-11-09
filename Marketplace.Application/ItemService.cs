@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Marketplace.Application.Interfaces;
 using Marketplace.Domain;
 
 namespace Marketplace.Application
@@ -10,41 +6,67 @@ namespace Marketplace.Application
 
     public class ItemService : IItemService
     {
-        private List<Item> items = new List<Item>();
+        private readonly IItemRepository _itemRepository;
+        private readonly IUserRepository _userRepository;
 
-        
-        public bool AddItem(string name, int price, string description, DateTime createdAt)
+        public ItemService(IItemRepository itemRepository, IUserRepository userRepository)
         {
-            Item item = new Item(name, description, price, createdAt);
-            items.Add(item);
+            _itemRepository = itemRepository;
+            _userRepository = userRepository;
+        }
+
+        public async Task<bool> AddItemAsync(string name, int price, string description, int ram = 0, int storage = 0)
+        {
+            var item = new Item(name, description, price, ram, storage);
+            
+            if (!item.IsValidForPurchase())
+                return false;
+
+            await _itemRepository.AddAsync(item);
+            await _itemRepository.SaveChangesAsync();
             return true;
         }
 
-        public bool RemoveItem(int itemId)
+        public async Task<bool> RemoveItemAsync(int itemId)
         {
-            var item = items.FirstOrDefault(i => i.Id == itemId);
+            var item = await _itemRepository.GetByIdAsync(itemId);
             if (item != null)
             {
-                items.Remove(item);
+                await _itemRepository.RemoveAsync(item);
+                await _itemRepository.SaveChangesAsync();
                 return true;
             }
             return false;
         }
 
-        public bool BuyItem(User user, int itemId)
+        public async Task<bool> BuyItemAsync(string username, int itemId)
         {
-            var item = items.FirstOrDefault(i => i.Id == itemId);
-            if (item != null && user.Balance >= item.Price)
+            var item = await _itemRepository.GetByIdAsync(itemId);
+            var user = await _userRepository.GetByUsernameAsync(username);
+
+            if (item != null && user != null && user.CanAfford(item.Price))
             {
-                user.Balance -= item.Price;
-                items.Remove(item);
+                user.DeductBalance(item.Price);
+                await _userRepository.UpdateAsync(user);
+                await _itemRepository.RemoveAsync(item);
+                
+                await _userRepository.SaveChangesAsync();
+                await _itemRepository.SaveChangesAsync();
+                
                 return true;
             }
             return false;
         }
-        public IReadOnlyList<Item> GetAllItems()
+
+        public async Task<IReadOnlyList<Item>> GetAllItemsAsync()
         {
-            return items.AsReadOnly();
+            var items = await _itemRepository.GetAllAsync();
+            return items.ToList().AsReadOnly();
+        }
+
+        public async Task<Item?> GetItemByIdAsync(int itemId)
+        {
+            return await _itemRepository.GetByIdAsync(itemId);
         }
     }
 }

@@ -1,44 +1,52 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Marketplace.Domain
+﻿namespace Marketplace.Domain
 {
     public class User
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int UserId { get; set; }
-        
-        [Required]
-        public string Username { get; set; } = string.Empty;
-        
-        [Required]
-        public string Password { get; set; } = string.Empty;
-        
-        [Required]
-        public int Age { get; set; }
-        
-        public int Balance { get; set; }
-        
-        [Required]
-        public string PhoneNumber { get; set; } = string.Empty;
-        
-        public string Email { get; set; } = string.Empty;
+        public int UserId { get; private set; }
+        public string Username { get; private set; } = string.Empty;
+        public string Password { get; private set; } = string.Empty;
+        public int Age { get; private set; }
+        public int Balance { get; private set; }
+        public string PhoneNumber { get; private set; } = string.Empty;
+        public string Email { get; private set; } = string.Empty;
 
-        // Parameterless constructor for Entity Framework
-        public User()
-        {
-            Balance = 0;
+        private User() 
+        { 
+            Balance = 0; 
         }
 
-        public User(string name, string password, int age, string phoneNumber, string email)
+        public User(string username, string password, int age, string phoneNumber, string email)
         {
-            this.Username = name;
-            this.Password = password;
-            this.Age = age;
-            this.Balance = 0;
-            this.PhoneNumber = phoneNumber;
-            this.Email = email;
+            Username = username;
+            Password = password;
+            Age = age;
+            Balance = 0;
+            PhoneNumber = phoneNumber;
+            Email = email;
+        }
+
+        public void AddBalance(int amount)
+        {
+            if (amount > 0)
+                Balance += amount;
+        }
+
+        public bool CanAfford(int amount)
+        {
+            return Balance >= amount;
+        }
+
+        public void DeductBalance(int amount)
+        {
+            if (CanAfford(amount))
+                Balance -= amount;
+        }
+
+        public void UpdateProfile(int age, string phoneNumber, string email)
+        {
+            Age = age;
+            PhoneNumber = phoneNumber;
+            Email = email;
         }
     }
 }

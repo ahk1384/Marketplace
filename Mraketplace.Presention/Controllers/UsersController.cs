@@ -3,7 +3,6 @@ using Mraketplace.Presention.DTOs.RequestModels;
 using Mraketplace.Presention.DTOs.ResponseModels;
 using Marketplace.Application;
 
-
 [ApiController]
 [Route("user-apis")]
 public class UsersController : ControllerBase
@@ -16,15 +15,15 @@ public class UsersController : ControllerBase
     }
     
     [HttpGet("get-user-summary")]
-    public string GetUserFunction()
+    public async Task<string> GetUserFunction()
     {
-        return _userService.GetAllUser();
+        return await _userService.GetAllUsersAsync();
     }
 
     [HttpPost("register")]
-    public IActionResult RegisterUser(RegisterRequestModel registerRequest)
+    public async Task<IActionResult> RegisterUser(RegisterRequestModel registerRequest)
     {
-        if (_userService.RegisterUser(registerRequest.username, registerRequest.password, 
+        if (await _userService.RegisterUserAsync(registerRequest.username, registerRequest.password, 
             registerRequest.age, registerRequest.phoneNumber, registerRequest.email))
         {
             return Ok("Registration Successful");
@@ -36,9 +35,9 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("login")]
-    public IActionResult LoginUser(LoginRequestModel loginRequest)
+    public async Task<IActionResult> LoginUser(LoginRequestModel loginRequest)
     {
-        if (_userService.LoginUser(loginRequest.username, loginRequest.password))
+        if (await _userService.LoginUserAsync(loginRequest.username, loginRequest.password))
         {
             return Ok("Login Successful");
         }
@@ -49,26 +48,22 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("get-user/{username}")]
-    public IActionResult GetUser(string username)
+    public async Task<IActionResult> GetUser(string username)
     {
-        var user = _userService.GetUserByName(username);
-        if (user != null)
+        var user = await _userService.GetUserByNameAsync(username);
+        if (user == null)
         {
-            return Ok(new { 
-                Username = user.Username, 
-                Age = user.Age, 
-                PhoneNumber = user.PhoneNumber, 
-                Email = user.Email,
-                Balance = user.Balance 
-            });
+            return NotFound("User not found");
         }
-        return NotFound("User not found");
+        
+        var response = new UserSummaryResponseModel(user.Username, user.Age);
+        return Ok(response);
     }
 
     [HttpPut("add-balance")]
-    public IActionResult AddBalance([FromQuery] string username, [FromQuery] int amount)
+    public async Task<IActionResult> AddBalance([FromQuery] string username, [FromQuery] int amount)
     {
-        if (_userService.AddBalance(username, amount))
+        if (await _userService.AddBalanceAsync(username, amount))
         {
             return Ok($"Balance added successfully");
         }

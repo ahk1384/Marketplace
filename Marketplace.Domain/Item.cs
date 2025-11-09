@@ -1,38 +1,42 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-namespace Marketplace.Domain
+﻿namespace Marketplace.Domain
 {
     public class Item
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int Id { get; private set; }
+        public string Name { get; private set; } = string.Empty;
+        public string Description { get; private set; } = string.Empty;
+        public int Price { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public int Ram { get; private set; }
+        public int Storage { get; private set; }
 
-        [Required]
-        public string Name { get; set; } = string.Empty;
-
-        public string Description { get; set; } = string.Empty;
-
-        public int Price { get; set; }
-
-        public DateTime CreatedAt { get; set; }
-
-        public int Ram { get; set; }
-
-        public int Storage { get; set; }
-
-        // Parameterless constructor for Entity Framework
-        public Item()
+        private Item()
         {
-            CreatedAt = DateTime.Now;
+            CreatedAt = DateTime.UtcNow;
         }
 
-        public Item(string name, string description, int price, DateTime createdAt)
+        public Item(string name, string description, int price, int ram = 0, int storage = 0)
         {
-            this.Name = name;
-            this.Description = description;
-            this.Price = price;
-            this.CreatedAt = createdAt;
+            Name = name;
+            Description = description;
+            Price = price;
+            Ram = ram;
+            Storage = storage;
+            CreatedAt = DateTime.UtcNow;
+        }
+
+        public bool IsValidForPurchase()
+        {
+            return Price > 0 && !string.IsNullOrEmpty(Name);
+        }
+
+        public void UpdateDetails(string name, string description, int price, int ram, int storage)
+        {
+            Name = name;
+            Description = description;
+            Price = price;
+            Ram = ram;
+            Storage = storage;
         }
     }
 }

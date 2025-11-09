@@ -17,32 +17,73 @@ namespace Marketplace.Infrastructure
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure User entity
             modelBuilder.Entity<User>(entity =>
             {
                 entity.ToTable("users");
                 entity.HasKey(e => e.UserId);
-                entity.Property(e => e.Username).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.Email).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.Password).HasMaxLength(255).IsRequired();
-                entity.Property(e => e.PhoneNumber).HasMaxLength(20).IsRequired();
-                entity.HasIndex(e => e.Username).IsUnique();
+                
+                entity.Property(e => e.UserId)
+                    .HasColumnName("UserId")
+                    .ValueGeneratedOnAdd();
+                
+                entity.Property(e => e.Username)
+                    .IsRequired()
+                    .HasMaxLength(50);
+                
+                entity.Property(e => e.Email)
+                    .IsRequired()
+                    .HasMaxLength(100);
+                
+                entity.Property(e => e.Password)
+                    .IsRequired()
+                    .HasMaxLength(255);
+                
+                entity.Property(e => e.PhoneNumber)
+                    .IsRequired()
+                    .HasMaxLength(20);
+                
+                entity.Property(e => e.Age)
+                    .IsRequired();
+                
+                entity.Property(e => e.Balance)
+                    .IsRequired()
+                    .HasDefaultValue(0);
+                
+                entity.HasIndex(e => e.Username)
+                    .IsUnique();
             });
 
-            // Configure Item entity
             modelBuilder.Entity<Item>(entity =>
             {
                 entity.ToTable("items");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(500).IsRequired();
-                entity.Property(e => e.CreatedAt).IsRequired();
+                
+                entity.Property(e => e.Id)
+                    .HasColumnName("Id")
+                    .ValueGeneratedOnAdd();
+                
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+                
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(500);
+                
+                entity.Property(e => e.Price)
+                    .IsRequired();
+                
+                entity.Property(e => e.CreatedAt)
+                    .IsRequired();
+                
+                entity.Property(e => e.Ram)
+                    .IsRequired()
+                    .HasDefaultValue(0);
+                
+                entity.Property(e => e.Storage)
+                    .IsRequired()
+                    .HasDefaultValue(0);
             });
-        }
-
-        public void InitializeDatabase()
-        {
-            Database.Migrate(); // Use Migrate instead of EnsureCreated for production scenarios
         }
     }
 }
