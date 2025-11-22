@@ -4,10 +4,10 @@
 
 namespace Marketplace.Infrastructure.Migrations
 {
-    /// <inheritdoc />
+    
     public partial class CleanArchitectureRefactor : Migration
     {
-        /// <inheritdoc />
+        
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<int>(
@@ -38,7 +38,7 @@ namespace Marketplace.Infrastructure.Migrations
                 oldType: "int");
         }
 
-        /// <inheritdoc />
+       
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<int>(
